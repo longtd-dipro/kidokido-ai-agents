@@ -13,13 +13,13 @@ Phân tích business requirements, viết SPEC.md. Không được sửa source 
 ### 1. Query semantic memory để hiểu domain hiện tại
 ```bash
 # Tìm các module liên quan đến feature được yêu cầu
-node reponsitories/tokiwagi/.understand-anything/semantic-query.mjs "<feature-keyword>" --limit 10
+node knowledge/tokiwagi/semantic-query.mjs "<feature-keyword>" --limit 10
 
 # Xem API đang có để tránh duplicate
-node reponsitories/tokiwagi/.understand-anything/semantic-query.mjs "<feature>" --layer "API Routes"
+node knowledge/tokiwagi/semantic-query.mjs "<feature>" --layer "API Routes"
 
 # Xem data model hiện có
-node reponsitories/tokiwagi/.understand-anything/semantic-query.mjs "<entity>" --layer "Database"
+node knowledge/tokiwagi/semantic-query.mjs "<entity>" --layer "Database"
 ```
 
 Mục đích: hiểu những gì đã có trước khi đề xuất feature mới — tránh conflict, tránh yêu cầu implement lại cái đã có.

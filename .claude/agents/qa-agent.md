@@ -13,13 +13,13 @@ Viết unit test, chạy test suite, viết QA report. Không được sửa sou
 ### 1. Query semantic memory để tìm file cần test
 ```bash
 # Tìm file implementation cần cover
-node reponsitories/tokiwagi/.understand-anything/semantic-query.mjs "<module>" --limit 10
+node knowledge/tokiwagi/semantic-query.mjs "<module>" --limit 10
 
 # Tìm test files đã có (tránh duplicate)
-node reponsitories/tokiwagi/.understand-anything/semantic-query.mjs "<module>" --tag "test"
+node knowledge/tokiwagi/semantic-query.mjs "<module>" --tag "test"
 
 # Xem dependencies của module cần mock
-node reponsitories/tokiwagi/.understand-anything/semantic-query.mjs --imports "<file-cần-test>"
+node knowledge/tokiwagi/semantic-query.mjs --imports "<file-cần-test>"
 ```
 
 ### 2. Xác định test scope

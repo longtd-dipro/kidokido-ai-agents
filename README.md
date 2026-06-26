@@ -7,23 +7,29 @@ Hệ thống AI Agent hỗ trợ phát triển dự án KIDOKIDO với 3 persona
 ## Tổng quan
 
 ```
-AI_AGENT_KIDOKIDO/
-├── CLAUDE.md              ← Context tự động load cho mọi session
-├── POLICIES.md            ← Luật bất biến cho mọi agent
-├── README.md              ← File này
+AI_AGENT_KIDOKIDO/              ← repo này (clone để dùng AI agents)
+├── CLAUDE.md                   ← Context tự động load cho mọi session
+├── POLICIES.md                 ← Luật bất biến cho mọi agent
+├── README.md                   ← File này
+├── knowledge/
+│   └── tokiwagi/               ← Knowledge graph (commit vào repo này)
+│       ├── knowledge-graph.json   ← Semantic memory (full, 884KB)
+│       ├── semantic-index.json    ← Semantic memory (compact, 6.7KB)
+│       ├── semantic-query.mjs     ← Query script
+│       └── How_To_Use.md         ← Hướng dẫn chạy graph server
 ├── .claude/
 │   └── agents/
-│       ├── ba-agent.md    ← BA persona
-│       ├── dev-agent.md   ← Dev persona
-│       └── qa-agent.md    ← QA persona
+│       ├── ba-agent.md         ← BA persona
+│       ├── dev-agent.md        ← Dev persona
+│       └── qa-agent.md         ← QA persona
 └── reponsitories/
-    └── tokiwagi/          ← Source code dự án
-        └── .understand-anything/
-            ├── knowledge-graph.json   ← Semantic memory (full)
-            ├── semantic-index.json    ← Semantic memory (compact)
-            ├── semantic-query.mjs     ← Query script
-            └── How_To_Use.md         ← Hướng dẫn chạy graph server
+    └── tokiwagi/               ← Source code dự án (repo riêng)
+        └── .understand-anything → ../../knowledge/tokiwagi (symlink)
 ```
+
+> `knowledge/` được commit vào `AI_AGENT_KIDOKIDO` — team clone repo này là có graph ngay.
+> `reponsitories/tokiwagi/.understand-anything` là symlink → data thực nằm ở `knowledge/tokiwagi/`.
+> Source code repo (`tokiwagi`) gitignore `.understand-anything` → không bị ảnh hưởng.
 
 ---
 
@@ -93,10 +99,11 @@ Toàn bộ codebase `tokiwagi` đã được phân tích và lưu thành knowled
 
 **Vị trí:**
 ```
-reponsitories/tokiwagi/.understand-anything/
+knowledge/tokiwagi/         ← data thực (commit vào repo này)
+reponsitories/tokiwagi/.understand-anything  ← symlink → ../../knowledge/tokiwagi
 ```
 
-**Xem hướng dẫn chi tiết:** [`reponsitories/tokiwagi/.understand-anything/How_To_Use.md`](reponsitories/tokiwagi/.understand-anything/How_To_Use.md)
+**Xem hướng dẫn chi tiết:** [`knowledge/tokiwagi/How_To_Use.md`](knowledge/tokiwagi/How_To_Use.md)
 
 **Mở dashboard:**
 ```
@@ -106,10 +113,10 @@ reponsitories/tokiwagi/.understand-anything/
 **Query nhanh (không cần dashboard):**
 ```bash
 # Tìm file liên quan đến feature
-node reponsitories/tokiwagi/.understand-anything/semantic-query.mjs "booking" --limit 10
+node knowledge/tokiwagi/semantic-query.mjs "booking" --limit 10
 
 # Tìm trong layer cụ thể
-node reponsitories/tokiwagi/.understand-anything/semantic-query.mjs "auth" --layer "API Routes"
+node knowledge/tokiwagi/semantic-query.mjs "auth" --layer "API Routes"
 ```
 
 ---

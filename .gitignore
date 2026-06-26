@@ -1,0 +1,10 @@
+# understand-anything build artifacts (large, not needed for sharing)
+knowledge/*/intermediate/
+knowledge/*/tmp/
+knowledge/*/.trash-*/
+
+# OS
+.DS_Store
+
+# Memory files (personal, not team)
+memory/

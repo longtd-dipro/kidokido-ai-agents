@@ -12,13 +12,13 @@ Khi nhận task liên quan đến repo **tokiwagi**, PHẢI chạy semantic quer
 
 ```bash
 # Bước 1: Tìm file liên quan theo keyword của task
-node reponsitories/tokiwagi/.understand-anything/semantic-query.mjs "<keyword>" --limit 10
+node knowledge/tokiwagi/semantic-query.mjs "<keyword>" --limit 10
 
 # Bước 2 (nếu biết layer): Thu hẹp phạm vi
-node reponsitories/tokiwagi/.understand-anything/semantic-query.mjs "<keyword>" --layer "<layer>"
+node knowledge/tokiwagi/semantic-query.mjs "<keyword>" --layer "<layer>"
 
 # Bước 3 (khi sắp sửa file): Kiểm tra blast radius
-node reponsitories/tokiwagi/.understand-anything/semantic-query.mjs --dependents "<file-path>"
+node knowledge/tokiwagi/semantic-query.mjs --dependents "<file-path>"
 ```
 
 **10 layers có sẵn:**
@@ -34,7 +34,7 @@ node reponsitories/tokiwagi/.understand-anything/semantic-query.mjs --dependents
 - `Styling` — *.scss, src/styles/
 
 **Compact index** (~1,700 tokens, load khi cần định vị nhanh):
-`reponsitories/tokiwagi/.understand-anything/semantic-index.json`
+`knowledge/tokiwagi/semantic-index.json`
 
 ### Quy tắc dùng semantic memory
 

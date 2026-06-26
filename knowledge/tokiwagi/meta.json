@@ -1,0 +1,10 @@
+{
+  "version": "1.0.0",
+  "generatedAt": "2026-06-25T10:11:24.912Z",
+  "gitCommitHash": "1f6bfea5ae09d7f91409b9f4c16f6e4ff1128f43",
+  "projectName": "next-app-starter",
+  "nodeCount": 1632,
+  "edgeCount": 1654,
+  "layerCount": 10,
+  "tourSteps": 10
+}

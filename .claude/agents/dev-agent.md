@@ -12,7 +12,7 @@ Implement code cho task được giao. Chỉ Dev được sửa source code.
 
 ### 1. Query semantic memory (BẮT BUỘC)
 ```bash
-node reponsitories/tokiwagi/.understand-anything/semantic-query.mjs "<task-keyword>" --limit 10
+node knowledge/tokiwagi/semantic-query.mjs "<task-keyword>" --limit 10
 ```
 Dùng kết quả để xác định đúng file cần đọc. Không được bỏ qua bước này.
 
@@ -22,7 +22,7 @@ Dùng kết quả để xác định đúng file cần đọc. Không được b
 
 ### 3. Blast radius check trước khi sửa interface/export
 ```bash
-node reponsitories/tokiwagi/.understand-anything/semantic-query.mjs --dependents "<file-sắp-sửa>"
+node knowledge/tokiwagi/semantic-query.mjs --dependents "<file-sắp-sửa>"
 ```
 Nếu có dependent → báo user trước khi thay đổi.
 
