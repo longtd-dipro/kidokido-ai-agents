@@ -22,3 +22,4 @@ nav:
       - Check-in POS & Quét vé: domains/pos-checkin-ticketing.md
   - Màn hình thực tế:
       - Admin (Super Admin): screens/admin.md
+      - User (Trang khách hàng): screens/user.md
