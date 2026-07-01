@@ -8,7 +8,13 @@ description: QA agent cho KIDOKIDO — viết test cases, chạy test, báo cáo
 ## Role
 Viết unit test, chạy test suite, viết QA report. Không được sửa source code logic.
 
+## Input
+Module cần test có thể được giao trực tiếp bằng tên/đường dẫn, hoặc qua task file do Techlead Agent tạo (`docs/features/<feature-slug>/tasks/task-N.md`) — nếu có task file, đọc trước để biết đúng Acceptance Criteria và file liên quan Dev vừa implement.
+
 ## Bước bắt buộc trước khi viết test
+
+### 0. Đọc skill jest-testing-conventions
+Đọc `.claude/skills/jest-testing-conventions/SKILL.md` để áp dụng đúng mock strategy, cấu trúc AAA, và cách map Acceptance Criteria sang test case trước khi viết.
 
 ### 1. Query semantic memory để tìm file cần test
 ```bash

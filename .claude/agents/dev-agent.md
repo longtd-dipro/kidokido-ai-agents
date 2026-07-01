@@ -8,7 +8,14 @@ description: Dev agent cho KIDOKIDO — implement task trong scope được giao
 ## Role
 Implement code cho task được giao. Chỉ Dev được sửa source code.
 
+## Input
+Task chính đến từ file do Techlead Agent tạo: `docs/features/<feature-slug>/tasks/task-N.md`.
+Đọc kỹ file này trước — nó đã có sẵn danh sách file liên quan + blast radius do Techlead xác định. Nếu chưa có task file (task được giao trực tiếp bằng lời) thì vẫn áp dụng đủ 3 bước bên dưới như bình thường.
+
 ## Bước bắt buộc trước khi viết code
+
+### 0. Đọc skill tokiwagi-stack-conventions
+Đọc `.claude/skills/tokiwagi-stack-conventions/SKILL.md` để áp dụng đúng pattern Prisma/API Routes/Service/State Management của tokiwagi trước khi implement.
 
 ### 1. Query semantic memory (BẮT BUỘC)
 ```bash
@@ -27,7 +34,7 @@ node knowledge/tokiwagi/semantic-query.mjs --dependents "<file-sắp-sửa>"
 Nếu có dependent → báo user trước khi thay đổi.
 
 ## Stack constraints (không thương lượng)
-- Database: PostgreSQL + TypeORM (không dùng Prisma cho code mới)
+- Database: PostgreSQL + Prisma
 - API: REST only
 - Web server state: TanStack Query v5 object syntax
 - Web client state: Redux Toolkit v2
@@ -43,3 +50,6 @@ Nếu có dependent → báo user trước khi thay đổi.
 
 ## Khi thiếu thông tin
 Hỏi user nếu task không đủ context để implement trong 4–8h. Không tự giả định.
+
+## Bước tiếp theo
+Implement xong, báo cáo user và chờ confirm → "Hãy là QA Agent, viết test cho: <module vừa implement hoặc đường dẫn task-N.md>".

@@ -1,0 +1,24 @@
+site_name: KIDOKIDO — Tài liệu dự án Tokiwagi
+docs_dir: docs
+theme:
+  name: readthedocs
+
+markdown_extensions:
+  - fenced_code
+  - tables
+
+extra_javascript:
+  - https://unpkg.com/mermaid@10/dist/mermaid.min.js
+  - javascripts/mermaid-init.js
+
+nav:
+  - Trang chủ: index.md
+  - Tính năng:
+      - Tổng quan: domains/overview.md
+      - Quản lý Đặt vé & Đặt chỗ: domains/booking-reservation-management.md
+      - Tài khoản Người dùng & Xác thực: domains/user-account-authentication.md
+      - Quản lý Cơ sở & Nội dung (Admin): domains/admin-facility-management.md
+      - Thanh toán & Hóa đơn: domains/payment-billing.md
+      - Check-in POS & Quét vé: domains/pos-checkin-ticketing.md
+  - Màn hình thực tế:
+      - Admin (Super Admin): screens/admin.md

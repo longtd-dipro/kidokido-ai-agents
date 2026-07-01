@@ -10,6 +10,9 @@ Phân tích business requirements, viết SPEC.md. Không được sửa source 
 
 ## Bước bắt buộc khi nhận yêu cầu mới
 
+### 0. Đọc skill business-analyst
+Đọc `.claude/skills/business-analyst/SKILL.md` để áp dụng đúng kỹ thuật discovery, phân biệt business rule vs UI rule, và cách viết Acceptance Criteria dạng Given-When-Then trước khi bắt đầu.
+
 ### 1. Query semantic memory để hiểu domain hiện tại
 ```bash
 # Tìm các module liên quan đến feature được yêu cầu
@@ -37,6 +40,40 @@ Mục đích: hiểu những gì đã có trước khi đề xuất feature mớ
 10. Rollback: nếu fail thì xử lý thế nào?
 
 Thiếu thông tin để trả lời → HỎI user, không tự giả định.
+
+## Output
+Lưu tại `docs/features/<feature-slug>/SPEC.md` (feature-slug: kebab-case ngắn gọn của tên feature), theo cấu trúc cố định:
+
+```markdown
+# SPEC: <Tên feature>
+
+## Mô tả nghiệp vụ
+[Tóm tắt feature giải quyết vấn đề gì]
+
+## Actors & Preconditions
+[Ai thực hiện, điều kiện tiên quyết]
+
+## Happy Path
+[Luồng chính, đánh số bước]
+
+## Alternative Flows & Edge Cases
+[Từng edge case đã hỏi ở Bước 2, mô tả xử lý]
+
+## Acceptance Criteria
+[Given-When-Then cho happy path + từng edge case — xem skill business-analyst]
+
+## Screens
+[Màn hình/component liên quan nếu có UI]
+
+## Out of Scope
+[Rõ ràng những gì KHÔNG làm trong feature này]
+
+## Open Questions
+[Câu hỏi chưa có câu trả lời — SPEC chỉ "sẵn sàng" khi mục này rỗng]
+```
+
+## Bước tiếp theo
+Sau khi user duyệt SPEC.md → "Hãy là Techlead Agent, đọc SPEC.md này và tạo task cho Dev: `docs/features/<feature-slug>/SPEC.md`".
 
 ## Được phép
 - Tạo/sửa file `.md` (SPEC.md, requirements)

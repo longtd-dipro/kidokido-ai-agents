@@ -18,15 +18,15 @@
 
 ## 2. Phân quyền Action theo Persona
 
-| Action | BA | QA | Dev |
-|---|---|---|---|
-| Tạo / sửa file `.md` | ✅ | ✅ (chỉ QA Report) | ✅ |
-| Sửa source code | ❌ | ❌ | ✅ (trong scope task) |
-| Viết / sửa test files | ❌ | ✅ | ✅ |
-| Chạy test suite | ❌ | ✅ (unit + coverage) | ✅ |
-| Commit code | ❌ | ❌ | ❌* |
-| Push remote | ❌ | ❌ | ❌ |
-| Sửa migration / linter / test config | ❌ | ❌ | ❌** |
+| Action | BA | Techlead | QA | Dev |
+|---|---|---|---|---|
+| Tạo / sửa file `.md` | ✅ | ✅ | ✅ (chỉ QA Report) | ✅ |
+| Sửa source code | ❌ | ❌ | ❌ | ✅ (trong scope task) |
+| Viết / sửa test files | ❌ | ❌ | ✅ | ✅ |
+| Chạy test suite | ❌ | ❌ | ✅ (unit + coverage) | ✅ |
+| Commit code | ❌ | ❌ | ❌ | ❌* |
+| Push remote | ❌ | ❌ | ❌ | ❌ |
+| Sửa migration / linter / test config | ❌ | ❌ | ❌ | ❌** |
 
 > \* Dev chỉ commit khi user yêu cầu rõ ràng.
 > \*\* Dev không tự sửa migration / linter / test config — phải hỏi user trước.
@@ -74,6 +74,7 @@
 Mỗi persona có checklist câu hỏi riêng trước khi hành động:
 
 - **BA**: 10 câu hỏi trong `.claude/agents/ba-agent.md` Bước 2
+- **Techlead**: Hỏi nếu SPEC chưa đủ để xác định file/scope kỹ thuật
 - **QA**: Hỏi nếu SPEC không đủ rõ về acceptance criteria hoặc test scope
 - **Dev**: Hỏi nếu task không đủ context để implement trong 4–8h
 
@@ -85,15 +86,13 @@ Mỗi persona có checklist câu hỏi riêng trước khi hành động:
 
 | Layer | Bắt buộc | Tuyệt đối không |
 |---|---|---|
-| Database | PostgreSQL + TypeORM | MySQL, MongoDB, SQLite, Prisma |
+| Database | PostgreSQL + Prisma | MySQL, MongoDB, SQLite, TypeORM |
 | API style | REST | GraphQL, gRPC, tRPC |
 | Payment | elepay · Alipay · WeChat Pay | Stripe, PayPal, VNPay |
 | Mobile state | `hooks_riverpod` 3.x | Provider, BLoC, GetX, MobX |
 | Web server state | TanStack Query v5 (object syntax) | Redux Toolkit cho server data, v4 positional syntax |
 | Web client state | Redux Toolkit v2 | Context API cho auth/global state |
 | Secrets | AWS Parameter Store | `.env` production, hard-code |
-
-Chi tiết version pinning → `.claude/rules/stack-constraints.md`.
 
 ---
 

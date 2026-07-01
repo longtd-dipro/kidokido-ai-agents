@@ -1,0 +1,3233 @@
+{
+  "version": "1.0.0",
+  "project": {
+    "name": "tokiwagi",
+    "languages": [
+      "typescript",
+      "javascript",
+      "sql",
+      "css"
+    ],
+    "frameworks": [
+      "Next.js",
+      "React",
+      "Express",
+      "Prisma",
+      "NextAuth",
+      "Redux",
+      "MUI",
+      "TailwindCSS"
+    ],
+    "description": "Ứng dụng Next.js full-stack quản lý đặt phòng/vé cho các cơ sở (tenant), tích hợp thanh toán GMO, tích hợp POS Smaregi, và bảng điều khiển admin để quản lý tenant, vé, nhân viên, tin tức và cài đặt hệ thống.",
+    "analyzedAt": "2026-07-01T03:59:51.000Z",
+    "gitCommitHash": "1f6bfea5ae09d7f91409b9f4c16f6e4ff1128f43"
+  },
+  "nodes": [
+    {
+      "id": "domain:booking-reservation-management",
+      "type": "domain",
+      "name": "Booking & Reservation Management",
+      "summary": "Handles the end-to-end lifecycle of facility bookings: online and offline reservation creation, monthly/times-limit ticket purchases, booking history management, cancellation, and queue/vacancy tracking. This is the core business domain of the app around which tenants, tickets, and users revolve.",
+      "tags": [
+        "booking",
+        "reservation",
+        "core-domain",
+        "ticket"
+      ],
+      "complexity": "complex",
+      "domainMeta": {
+        "entities": [
+          "Booking",
+          "Ticket",
+          "TicketBookingSchedule",
+          "BookingQueue",
+          "MasterMonthlyTicket",
+          "Tenant",
+          "User"
+        ],
+        "businessRules": [
+          "A booking must reference a valid ticket and tenant with available vacancy",
+          "Monthly and times-limit tickets cannot be double-booked/used across tenants beyond their limit",
+          "Cancelled or expired bookings free up vacancy slots and trigger reminder/cron jobs"
+        ],
+        "crossDomainInteractions": [
+          "Requires authenticated user session",
+          "Triggers GMO payment authorization",
+          "Booking check-in/out is performed via POS/Smaregi scanning"
+        ]
+      }
+    },
+    {
+      "id": "flow:create-online-booking",
+      "type": "flow",
+      "name": "Create Online Booking",
+      "summary": "User selects a tenant, ticket, and date, fills quantity/age info, agrees to disclaimers, pays via GMO/credit card, and receives a booking confirmation.",
+      "tags": [
+        "booking",
+        "online-payment",
+        "user-flow"
+      ],
+      "complexity": "complex",
+      "domainMeta": {
+        "entryPoint": "GET /booking/payment-online (PaymentOnlineBookingForm)",
+        "entryType": "http"
+      }
+    },
+    {
+      "id": "step:create-online-booking:select-tenant-ticket-date",
+      "type": "step",
+      "name": "Select Tenant Ticket Date",
+      "summary": "User selects tenant, ticket type, and booking date in the online booking form.",
+      "tags": [
+        "booking",
+        "form"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/components/CreateBooking/PaymentOnlineBookingForm/index.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:create-online-booking:enter-quantity-ages",
+      "type": "step",
+      "name": "Enter Quantity Ages",
+      "summary": "User enters the number of adults/children and their ages for the booking.",
+      "tags": [
+        "booking",
+        "form"
+      ],
+      "complexity": "simple",
+      "filePath": "src/components/CreateBooking/QuantityAndAgesInfoFields/index.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:create-online-booking:accept-disclaimer-terms",
+      "type": "step",
+      "name": "Accept Disclaimer Terms",
+      "summary": "User reviews and accepts facility disclaimer terms required before booking.",
+      "tags": [
+        "booking",
+        "validation"
+      ],
+      "complexity": "simple",
+      "filePath": "src/components/CreateBooking/DisclaimerTermsCheckbox/index.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:create-online-booking:enter-credit-card",
+      "type": "step",
+      "name": "Enter Credit Card",
+      "summary": "User enters or selects a saved credit card for online payment.",
+      "tags": [
+        "payment",
+        "form"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/components/CreateBooking/CreditCardForm/index.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:create-online-booking:submit-booking-request",
+      "type": "step",
+      "name": "Submit Booking Request",
+      "summary": "Booking request is submitted to the user bookings API for creation.",
+      "tags": [
+        "api-handler",
+        "booking"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/api/user/bookings/index.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:create-online-booking:process-gmo-payment",
+      "type": "step",
+      "name": "Process Gmo Payment",
+      "summary": "GMO payment gateway authorizes and captures the online payment for the booking.",
+      "tags": [
+        "payment",
+        "gmo"
+      ],
+      "complexity": "complex",
+      "filePath": "src/services/gmo.service.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:create-online-booking:show-booking-confirmation",
+      "type": "step",
+      "name": "Show Booking Confirmation",
+      "summary": "System displays a confirmation screen summarizing the completed booking.",
+      "tags": [
+        "booking",
+        "confirmation"
+      ],
+      "complexity": "simple",
+      "filePath": "src/components/CreateBooking/BookingConfirmation/index.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:create-online-booking:show-booking-completion",
+      "type": "step",
+      "name": "Show Booking Completion",
+      "summary": "Booking completion page is shown, finalizing the online booking flow.",
+      "tags": [
+        "booking",
+        "confirmation"
+      ],
+      "complexity": "simple",
+      "filePath": "src/components/CreateBooking/BookingCompletion/index.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "flow:create-offline-booking",
+      "type": "flow",
+      "name": "Create Offline/Admin Booking",
+      "summary": "Admin or facility staff creates a booking on behalf of a walk-in customer, selecting ticket type, calculating price, and confirming payment offline.",
+      "tags": [
+        "booking",
+        "offline-payment",
+        "admin"
+      ],
+      "complexity": "moderate",
+      "domainMeta": {
+        "entryPoint": "Admin/staff offline booking form (PaymentOfflineBookingForm)",
+        "entryType": "manual"
+      }
+    },
+    {
+      "id": "step:create-offline-booking:open-offline-booking-form",
+      "type": "step",
+      "name": "Open Offline Booking Form",
+      "summary": "Staff opens the offline booking form to start a walk-in booking.",
+      "tags": [
+        "booking",
+        "form"
+      ],
+      "complexity": "simple",
+      "filePath": "src/components/CreateBooking/PaymentOfflineBookingForm/index.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:create-offline-booking:select-ticket-plan-type",
+      "type": "step",
+      "name": "Select Ticket Plan Type",
+      "summary": "Staff selects the ticket plan type such as monthly or times-limit ticket.",
+      "tags": [
+        "booking",
+        "ticket"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/components/CreateBooking/PaymentOfflineBookingForm/UserMonthlyBookingForm.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:create-offline-booking:enter-booking-quantities",
+      "type": "step",
+      "name": "Enter Booking Quantities",
+      "summary": "Staff enters adult/child quantities and ages for the walk-in booking.",
+      "tags": [
+        "booking",
+        "form"
+      ],
+      "complexity": "simple",
+      "filePath": "src/components/CreateBooking/PaymentOfflineBookingForm/BookingForm.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:create-offline-booking:calculate-total-price",
+      "type": "step",
+      "name": "Calculate Total Price",
+      "summary": "System calculates total booking price including discounts for the offline booking.",
+      "tags": [
+        "booking",
+        "pricing"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/components/CreateBooking/PaymentOfflineBookingForm/TotalBookingInfo.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:create-offline-booking:confirm-offline-booking",
+      "type": "step",
+      "name": "Confirm Offline Booking",
+      "summary": "Staff reviews and confirms the offline booking details before submission.",
+      "tags": [
+        "booking",
+        "confirmation"
+      ],
+      "complexity": "simple",
+      "filePath": "src/components/CreateBooking/PaymentOfflineBookingForm/PaymentOfflineBookingConfirmation.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:create-offline-booking:submit-offline-booking",
+      "type": "step",
+      "name": "Submit Offline Booking",
+      "summary": "Offline booking is submitted and persisted via the admin bookings API.",
+      "tags": [
+        "api-handler",
+        "booking"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/api/admin/bookings/index.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:create-offline-booking:persist-booking-record",
+      "type": "step",
+      "name": "Persist Booking Record",
+      "summary": "Booking record is persisted with computed fields via server booking utilities.",
+      "tags": [
+        "database",
+        "booking"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/utils/server/booking.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "flow:manage-booking-history",
+      "type": "flow",
+      "name": "Manage Booking History",
+      "summary": "User views their past and upcoming bookings, inspects details, updates booking information, or cancels an existing booking.",
+      "tags": [
+        "booking",
+        "user-flow",
+        "history"
+      ],
+      "complexity": "moderate",
+      "domainMeta": {
+        "entryPoint": "GET /user/my-page/booking-history",
+        "entryType": "http"
+      }
+    },
+    {
+      "id": "step:manage-booking-history:list-booking-history",
+      "type": "step",
+      "name": "List Booking History",
+      "summary": "User views a paginated list of their booking history.",
+      "tags": [
+        "booking",
+        "page"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/user/my-page/booking-history/index.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:manage-booking-history:view-booking-detail",
+      "type": "step",
+      "name": "View Booking Detail",
+      "summary": "User views full details of a specific booking by ID.",
+      "tags": [
+        "booking",
+        "page"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/user/my-page/booking-history/[id].tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:manage-booking-history:update-booking-info",
+      "type": "step",
+      "name": "Update Booking Info",
+      "summary": "User updates editable information on an existing booking.",
+      "tags": [
+        "booking",
+        "form"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/user/my-page/booking-history/update/[id].tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:manage-booking-history:cancel-booking",
+      "type": "step",
+      "name": "Cancel Booking",
+      "summary": "User cancels a booking through the cancel bookings API.",
+      "tags": [
+        "api-handler",
+        "booking"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/api/user/bookings/cancel.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:manage-booking-history:show-cancel-success",
+      "type": "step",
+      "name": "Show Cancel Success",
+      "summary": "System confirms successful cancellation of the booking to the user.",
+      "tags": [
+        "booking",
+        "confirmation"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/user/my-page/booking-history/cancel-success.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "flow:booking-queue-vacancy",
+      "type": "flow",
+      "name": "Booking Queue & Vacancy Tracking",
+      "summary": "Admin monitors and manages the live booking queue (waiting/calling/cancelled) and facility vacancy status, with cron jobs auto-expiring overdue queue entries.",
+      "tags": [
+        "booking",
+        "queue",
+        "admin",
+        "cron"
+      ],
+      "complexity": "moderate",
+      "domainMeta": {
+        "entryPoint": "GET /admin/booking-queue",
+        "entryType": "http"
+      }
+    },
+    {
+      "id": "step:booking-queue-vacancy:view-booking-queue",
+      "type": "step",
+      "name": "View Booking Queue",
+      "summary": "Admin views the current booking queue dashboard.",
+      "tags": [
+        "booking",
+        "queue",
+        "page"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/admin/booking-queue/index.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:booking-queue-vacancy:fetch-waiting-bookings",
+      "type": "step",
+      "name": "Fetch Waiting Bookings",
+      "summary": "System fetches bookings currently in waiting status in the queue.",
+      "tags": [
+        "api-handler",
+        "queue"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/api/admin/booking-queue/waiting.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:booking-queue-vacancy:call-next-booking",
+      "type": "step",
+      "name": "Call Next Booking",
+      "summary": "Admin calls the next waiting booking to proceed with check-in.",
+      "tags": [
+        "api-handler",
+        "queue"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/api/admin/booking-queue/calling.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:booking-queue-vacancy:auto-cancel-overdue",
+      "type": "step",
+      "name": "Auto Cancel Overdue",
+      "summary": "System automatically cancels bookings that overstayed in the queue without response.",
+      "tags": [
+        "api-handler",
+        "queue"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/api/admin/booking-queue/system-cancelled.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:booking-queue-vacancy:view-vacancy-status",
+      "type": "step",
+      "name": "View Vacancy Status",
+      "summary": "Admin views current facility vacancy status derived from active bookings.",
+      "tags": [
+        "booking",
+        "vacancy",
+        "page"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/admin/booking-vacancies/index.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:booking-queue-vacancy:cron-process-overdue-queue",
+      "type": "step",
+      "name": "Cron Process Overdue Queue",
+      "summary": "Scheduled cron job processes and expires overdue calling-status bookings.",
+      "tags": [
+        "cron",
+        "queue"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/api/cron-job/process-overdue-calling-booking.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "flow:buy-ticket-plans",
+      "type": "flow",
+      "name": "Purchase Monthly/Times-Limit Ticket Plans",
+      "summary": "User browses and purchases recurring ticket plans (monthly pass or times-limit pass) that entitle multiple future bookings under usage constraints.",
+      "tags": [
+        "booking",
+        "ticket",
+        "monthly-ticket"
+      ],
+      "complexity": "moderate",
+      "domainMeta": {
+        "entryPoint": "GET /booking/buy-monthly-ticket",
+        "entryType": "http"
+      }
+    },
+    {
+      "id": "step:buy-ticket-plans:browse-monthly-ticket-page",
+      "type": "step",
+      "name": "Browse Monthly Ticket Page",
+      "summary": "User browses the monthly ticket purchase landing page.",
+      "tags": [
+        "ticket",
+        "page"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/booking/buy-monthly-ticket.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:buy-ticket-plans:browse-times-limit-ticket-page",
+      "type": "step",
+      "name": "Browse Times Limit Ticket Page",
+      "summary": "User browses the times-limit ticket purchase landing page.",
+      "tags": [
+        "ticket",
+        "page"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/booking/buy-times-limit-ticket.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:buy-ticket-plans:fill-monthly-booking-form",
+      "type": "step",
+      "name": "Fill Monthly Booking Form",
+      "summary": "User fills the monthly booking form to configure the ticket plan purchase.",
+      "tags": [
+        "ticket",
+        "form"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/components/CreateBooking/MonthlyBookingForm/index.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:buy-ticket-plans:check-monthly-ticket-usage",
+      "type": "step",
+      "name": "Check Monthly Ticket Usage",
+      "summary": "System checks whether the monthly ticket was already used across other tenants before allowing purchase.",
+      "tags": [
+        "api-handler",
+        "validation"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/api/user/bookings/monthly-tickets/check-already-used-across-tenants.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:buy-ticket-plans:show-monthly-completion",
+      "type": "step",
+      "name": "Show Monthly Completion",
+      "summary": "System shows the monthly ticket booking completion confirmation.",
+      "tags": [
+        "ticket",
+        "confirmation"
+      ],
+      "complexity": "simple",
+      "filePath": "src/components/CreateBooking/BookingCompletion/BookingCompletionMonthly.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "domain:user-account-authentication",
+      "type": "domain",
+      "name": "User Account & Authentication",
+      "summary": "Manages end-user identity: signup with email verification, sign-in/sign-out via NextAuth, password recovery and account unlock, and self-service management of personal information, credit cards, and favorite tenants.",
+      "tags": [
+        "authentication",
+        "user",
+        "account",
+        "security"
+      ],
+      "complexity": "moderate",
+      "domainMeta": {
+        "entities": [
+          "User",
+          "SecurityQuestion",
+          "CreditCard",
+          "UserTenantFavorite"
+        ],
+        "businessRules": [
+          "Email must be verified before an account is fully active",
+          "Repeated failed logins can lock an account, requiring an unlock request/token",
+          "Password reset and email change require a valid time-limited token"
+        ],
+        "crossDomainInteractions": [
+          "Feeds authenticated identity into Booking & Reservation Management",
+          "Admin accounts are provisioned/managed by Admin Facility Management"
+        ]
+      }
+    },
+    {
+      "id": "flow:user-signup-verification",
+      "type": "flow",
+      "name": "User Signup & Email Verification",
+      "summary": "New user registers an account, the system checks for duplicate email, creates the account, and sends a verification email that the user must confirm.",
+      "tags": [
+        "authentication",
+        "signup",
+        "email"
+      ],
+      "complexity": "moderate",
+      "domainMeta": {
+        "entryPoint": "POST /api/auth/signup",
+        "entryType": "http"
+      }
+    },
+    {
+      "id": "step:user-signup-verification:fill-signup-form",
+      "type": "step",
+      "name": "Fill Signup Form",
+      "summary": "User fills out the signup form with personal and account details.",
+      "tags": [
+        "authentication",
+        "form"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/signup.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:user-signup-verification:check-existing-email",
+      "type": "step",
+      "name": "Check Existing Email",
+      "summary": "System checks whether the entered email is already registered.",
+      "tags": [
+        "api-handler",
+        "validation"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/api/user/check-existing-email.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:user-signup-verification:create-account",
+      "type": "step",
+      "name": "Create Account",
+      "summary": "New user account is created via the signup API.",
+      "tags": [
+        "api-handler",
+        "authentication"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/api/auth/signup.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:user-signup-verification:send-verification-email",
+      "type": "step",
+      "name": "Send Verification Email",
+      "summary": "System sends an email verification link to the new user.",
+      "tags": [
+        "email",
+        "authentication"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/services/email.service.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:user-signup-verification:verify-email-token",
+      "type": "step",
+      "name": "Verify Email Token",
+      "summary": "User confirms their email by visiting the verification token link.",
+      "tags": [
+        "api-handler",
+        "authentication"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/api/auth/verify/[token].ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:user-signup-verification:show-signup-success",
+      "type": "step",
+      "name": "Show Signup Success",
+      "summary": "System shows the signup success confirmation page.",
+      "tags": [
+        "authentication",
+        "confirmation"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/signup-success.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "flow:login-password-recovery",
+      "type": "flow",
+      "name": "Login & Password Recovery",
+      "summary": "User signs in through NextAuth credentials, or recovers access via forgot-password, reset-password, and account unlock flows when locked out.",
+      "tags": [
+        "authentication",
+        "login",
+        "password"
+      ],
+      "complexity": "moderate",
+      "domainMeta": {
+        "entryPoint": "POST /api/auth/[...nextauth]",
+        "entryType": "http"
+      }
+    },
+    {
+      "id": "step:login-password-recovery:submit-signin-credentials",
+      "type": "step",
+      "name": "Submit Signin Credentials",
+      "summary": "User submits email/password credentials on the sign-in page.",
+      "tags": [
+        "authentication",
+        "form"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/signin.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:login-password-recovery:authenticate-nextauth",
+      "type": "step",
+      "name": "Authenticate Nextauth",
+      "summary": "NextAuth verifies credentials and establishes a session.",
+      "tags": [
+        "api-handler",
+        "authentication"
+      ],
+      "complexity": "complex",
+      "filePath": "src/pages/api/auth/[...nextauth].ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:login-password-recovery:request-password-reset",
+      "type": "step",
+      "name": "Request Password Reset",
+      "summary": "User requests a password reset link via forgot-password.",
+      "tags": [
+        "api-handler",
+        "authentication"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/api/auth/forgot-password.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:login-password-recovery:reset-password-with-token",
+      "type": "step",
+      "name": "Reset Password With Token",
+      "summary": "User sets a new password using the emailed reset token.",
+      "tags": [
+        "api-handler",
+        "authentication"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/api/auth/reset-password.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:login-password-recovery:request-unlock-account",
+      "type": "step",
+      "name": "Request Unlock Account",
+      "summary": "Locked-out user requests an account unlock email after failed login attempts.",
+      "tags": [
+        "api-handler",
+        "authentication"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/api/auth/request-unlock-account.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:login-password-recovery:unlock-account-token",
+      "type": "step",
+      "name": "Unlock Account Token",
+      "summary": "User unlocks their account by confirming the unlock token link.",
+      "tags": [
+        "api-handler",
+        "authentication"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/api/auth/unlock-account.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "flow:manage-personal-info",
+      "type": "flow",
+      "name": "Manage Personal Info & Preferences",
+      "summary": "Authenticated user manages their profile: personal details, email/password changes, saved credit cards, favorite tenants, and account deletion.",
+      "tags": [
+        "user",
+        "profile",
+        "self-service"
+      ],
+      "complexity": "moderate",
+      "domainMeta": {
+        "entryPoint": "GET /user/my-page/personal-info",
+        "entryType": "http"
+      }
+    },
+    {
+      "id": "step:manage-personal-info:view-personal-info",
+      "type": "step",
+      "name": "View Personal Info",
+      "summary": "User views their personal information page.",
+      "tags": [
+        "user",
+        "page"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/user/my-page/personal-info/index.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:manage-personal-info:update-personal-info",
+      "type": "step",
+      "name": "Update Personal Info",
+      "summary": "User updates their personal profile information.",
+      "tags": [
+        "user",
+        "form"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/user/my-page/personal-info/update-information/index.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:manage-personal-info:change-email",
+      "type": "step",
+      "name": "Change Email",
+      "summary": "User changes their account email, triggering a re-verification step.",
+      "tags": [
+        "api-handler",
+        "authentication"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/api/user/edit-email/index.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:manage-personal-info:change-password",
+      "type": "step",
+      "name": "Change Password",
+      "summary": "User changes their account password from personal info settings.",
+      "tags": [
+        "user",
+        "form"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/user/my-page/personal-info/change-password.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:manage-personal-info:manage-credit-cards",
+      "type": "step",
+      "name": "Manage Credit Cards",
+      "summary": "User views and manages their saved credit cards.",
+      "tags": [
+        "payment",
+        "user"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/user/my-page/personal-info/change-credit-card/index.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:manage-personal-info:manage-favorite-tenants",
+      "type": "step",
+      "name": "Manage Favorite Tenants",
+      "summary": "User views and manages their list of favorite facility tenants.",
+      "tags": [
+        "user",
+        "page"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/user/my-page/favorite-tenants.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:manage-personal-info:delete-account",
+      "type": "step",
+      "name": "Delete Account",
+      "summary": "User deletes their account after confirming the warning dialog.",
+      "tags": [
+        "user",
+        "account"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/user/my-page/delete-account.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "domain:admin-facility-management",
+      "type": "domain",
+      "name": "Admin Facility & Content Management",
+      "summary": "Back-office administration for facility operators: managing tenants (facilities), tickets/plans, staff accounts, news announcements, disclaimers, and app/email settings through an admin dashboard.",
+      "tags": [
+        "admin",
+        "management",
+        "dashboard",
+        "configuration"
+      ],
+      "complexity": "complex",
+      "domainMeta": {
+        "entities": [
+          "Tenant",
+          "Ticket",
+          "TicketBookingSchedule",
+          "Staff",
+          "News",
+          "Disclaimer",
+          "AppSetting",
+          "EmailSetting"
+        ],
+        "businessRules": [
+          "Only authenticated admin/staff accounts can access management screens",
+          "Tenants must be configured before tickets can be created against them",
+          "Ticket booking schedules define when a ticket can be booked"
+        ],
+        "crossDomainInteractions": [
+          "Configures GMO settings consumed by Payment & Billing",
+          "Configures ticket/tenant data consumed by POS Check-in & Ticketing",
+          "Manages staff accounts alongside User Account & Authentication"
+        ]
+      }
+    },
+    {
+      "id": "flow:tenant-management",
+      "type": "flow",
+      "name": "Tenant (Facility) Management",
+      "summary": "Admin creates, views, edits, and lists facility tenants that host bookable tickets.",
+      "tags": [
+        "admin",
+        "tenant",
+        "crud"
+      ],
+      "complexity": "moderate",
+      "domainMeta": {
+        "entryPoint": "GET /admin/tenant-management",
+        "entryType": "http"
+      }
+    },
+    {
+      "id": "step:tenant-management:list-tenants",
+      "type": "step",
+      "name": "List Tenants",
+      "summary": "Admin views the list of registered tenants.",
+      "tags": [
+        "admin",
+        "tenant",
+        "page"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/admin/tenant-management/index.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:tenant-management:create-tenant",
+      "type": "step",
+      "name": "Create Tenant",
+      "summary": "Admin creates a new facility tenant record.",
+      "tags": [
+        "admin",
+        "tenant",
+        "form"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/admin/tenant-management/create.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:tenant-management:edit-tenant",
+      "type": "step",
+      "name": "Edit Tenant",
+      "summary": "Admin edits an existing tenant's configuration.",
+      "tags": [
+        "admin",
+        "tenant",
+        "form"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/admin/tenant-management/edit/[tenantCode].tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:tenant-management:view-tenant-detail",
+      "type": "step",
+      "name": "View Tenant Detail",
+      "summary": "Admin views full details of a specific tenant.",
+      "tags": [
+        "admin",
+        "tenant",
+        "page"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/admin/tenant-management/view/[tenantCode].tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:tenant-management:persist-tenant",
+      "type": "step",
+      "name": "Persist Tenant",
+      "summary": "Tenant data is persisted via the admin tenants API.",
+      "tags": [
+        "api-handler",
+        "tenant"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/api/admin/tenants/index.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "flow:ticket-management",
+      "type": "flow",
+      "name": "Ticket (Plan) Management",
+      "summary": "Admin manages bookable ticket plans per tenant, including pricing/discount settings and their booking schedules.",
+      "tags": [
+        "admin",
+        "ticket",
+        "crud"
+      ],
+      "complexity": "moderate",
+      "domainMeta": {
+        "entryPoint": "GET /admin/ticket-management",
+        "entryType": "http"
+      }
+    },
+    {
+      "id": "step:ticket-management:list-tickets",
+      "type": "step",
+      "name": "List Tickets",
+      "summary": "Admin views the list of ticket plans.",
+      "tags": [
+        "admin",
+        "ticket",
+        "page"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/admin/ticket-management/index.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:ticket-management:create-ticket",
+      "type": "step",
+      "name": "Create Ticket",
+      "summary": "Admin creates a new ticket plan.",
+      "tags": [
+        "admin",
+        "ticket",
+        "form"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/admin/ticket-management/create.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:ticket-management:edit-ticket",
+      "type": "step",
+      "name": "Edit Ticket",
+      "summary": "Admin edits an existing ticket plan's configuration.",
+      "tags": [
+        "admin",
+        "ticket",
+        "form"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/admin/ticket-management/edit/[ticketId].tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:ticket-management:configure-booking-schedules",
+      "type": "step",
+      "name": "Configure Booking Schedules",
+      "summary": "Admin configures the ticket's booking schedule windows.",
+      "tags": [
+        "api-handler",
+        "ticket"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/api/admin/ticket-booking-schedules/index.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:ticket-management:persist-ticket",
+      "type": "step",
+      "name": "Persist Ticket",
+      "summary": "Ticket plan data is persisted via the admin tickets API.",
+      "tags": [
+        "api-handler",
+        "ticket"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/api/admin/tickets/index.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "flow:staff-management",
+      "type": "flow",
+      "name": "Staff Account Management",
+      "summary": "Admin manages staff accounts that operate the admin dashboard and POS scanning tools.",
+      "tags": [
+        "admin",
+        "staff",
+        "crud"
+      ],
+      "complexity": "simple",
+      "domainMeta": {
+        "entryPoint": "GET /admin/staff-management",
+        "entryType": "http"
+      }
+    },
+    {
+      "id": "step:staff-management:list-staff",
+      "type": "step",
+      "name": "List Staff",
+      "summary": "Admin views the list of staff accounts.",
+      "tags": [
+        "admin",
+        "staff",
+        "page"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/admin/staff-management/index.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:staff-management:create-staff",
+      "type": "step",
+      "name": "Create Staff",
+      "summary": "Admin creates a new staff account.",
+      "tags": [
+        "admin",
+        "staff",
+        "form"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/admin/staff-management/create.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:staff-management:edit-staff",
+      "type": "step",
+      "name": "Edit Staff",
+      "summary": "Admin edits an existing staff account.",
+      "tags": [
+        "admin",
+        "staff",
+        "form"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/admin/staff-management/edit/[id].tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:staff-management:persist-staff",
+      "type": "step",
+      "name": "Persist Staff",
+      "summary": "Staff account data is persisted via the admin staffs API.",
+      "tags": [
+        "api-handler",
+        "staff"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/api/admin/staffs/index.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "flow:news-disclaimer-management",
+      "type": "flow",
+      "name": "News & Disclaimer Management",
+      "summary": "Admin publishes news announcements shown to users and manages legal disclaimers presented during booking.",
+      "tags": [
+        "admin",
+        "content",
+        "news",
+        "disclaimer"
+      ],
+      "complexity": "simple",
+      "domainMeta": {
+        "entryPoint": "GET /admin/news-management",
+        "entryType": "http"
+      }
+    },
+    {
+      "id": "step:news-disclaimer-management:list-news",
+      "type": "step",
+      "name": "List News",
+      "summary": "Admin views the list of published news items.",
+      "tags": [
+        "admin",
+        "news",
+        "page"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/admin/news-management/index.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:news-disclaimer-management:create-news",
+      "type": "step",
+      "name": "Create News",
+      "summary": "Admin creates a new news announcement.",
+      "tags": [
+        "admin",
+        "news",
+        "form"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/admin/news-management/create.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:news-disclaimer-management:edit-news",
+      "type": "step",
+      "name": "Edit News",
+      "summary": "Admin edits an existing news announcement.",
+      "tags": [
+        "admin",
+        "news",
+        "form"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/admin/news-management/edit/[newsId].tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:news-disclaimer-management:manage-disclaimers",
+      "type": "step",
+      "name": "Manage Disclaimers",
+      "summary": "Admin manages the disclaimer texts shown during the booking flow.",
+      "tags": [
+        "admin",
+        "disclaimer",
+        "page"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/admin/disclaimer-management.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:news-disclaimer-management:persist-news",
+      "type": "step",
+      "name": "Persist News",
+      "summary": "News content is persisted via the admin news API.",
+      "tags": [
+        "api-handler",
+        "news"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/api/admin/news/index.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "flow:app-email-settings-management",
+      "type": "flow",
+      "name": "App & Email Settings Management",
+      "summary": "Admin configures global application settings and customizes/tests transactional email templates.",
+      "tags": [
+        "admin",
+        "configuration",
+        "email"
+      ],
+      "complexity": "moderate",
+      "domainMeta": {
+        "entryPoint": "GET /admin/app-settings",
+        "entryType": "http"
+      }
+    },
+    {
+      "id": "step:app-email-settings-management:view-app-settings",
+      "type": "step",
+      "name": "View App Settings",
+      "summary": "Admin views and edits global application settings.",
+      "tags": [
+        "admin",
+        "configuration",
+        "page"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/admin/app-settings.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:app-email-settings-management:manage-email-templates",
+      "type": "step",
+      "name": "Manage Email Templates",
+      "summary": "Admin views the list of configurable email setting templates.",
+      "tags": [
+        "admin",
+        "email",
+        "page"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/admin/email-settings/index.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:app-email-settings-management:edit-email-setting",
+      "type": "step",
+      "name": "Edit Email Setting",
+      "summary": "Admin edits the content of a specific email template.",
+      "tags": [
+        "admin",
+        "email",
+        "form"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/admin/email-settings/edit/[emailKey].tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:app-email-settings-management:preview-email-template",
+      "type": "step",
+      "name": "Preview Email Template",
+      "summary": "Admin previews how the edited email template will render.",
+      "tags": [
+        "api-handler",
+        "email"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/api/admin/email-settings/preview.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:app-email-settings-management:send-preview-email",
+      "type": "step",
+      "name": "Send Preview Email",
+      "summary": "Admin sends a test/preview email to verify the template output.",
+      "tags": [
+        "api-handler",
+        "email"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/api/admin/email-settings/send-preview-email.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "domain:payment-billing",
+      "type": "domain",
+      "name": "Payment & Billing",
+      "summary": "Processes online payments through the GMO payment gateway, manages saved credit cards, handles partial checkouts for extended stays, and produces revenue and OBIC accounting exports for finance.",
+      "tags": [
+        "payment",
+        "billing",
+        "gmo",
+        "finance"
+      ],
+      "complexity": "complex",
+      "domainMeta": {
+        "entities": [
+          "GmoSetting",
+          "CreditCard",
+          "Booking",
+          "PartialCheckout"
+        ],
+        "businessRules": [
+          "Online bookings cannot be confirmed until GMO payment authorization succeeds",
+          "Each tenant has its own GMO merchant settings",
+          "Partial checkouts require an existing active booking",
+          "OBIC accounting codes must be attached to bookings/tickets for revenue export"
+        ],
+        "crossDomainInteractions": [
+          "Consumes booking data from Booking & Reservation Management",
+          "GMO/revenue settings configured by Admin Facility Management"
+        ]
+      }
+    },
+    {
+      "id": "flow:online-payment-gmo",
+      "type": "flow",
+      "name": "Online Payment via GMO",
+      "summary": "User is redirected to the GMO payment page during online booking; GMO processes the charge and calls back the system with the result.",
+      "tags": [
+        "payment",
+        "gmo",
+        "online"
+      ],
+      "complexity": "complex",
+      "domainMeta": {
+        "entryPoint": "GET /booking/payment-online",
+        "entryType": "http"
+      }
+    },
+    {
+      "id": "step:online-payment-gmo:redirect-to-gmo-payment",
+      "type": "step",
+      "name": "Redirect To Gmo Payment",
+      "summary": "User is redirected to the online payment page to complete the GMO transaction.",
+      "tags": [
+        "payment",
+        "page"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/booking/payment-online.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:online-payment-gmo:process-payment-gmo-service",
+      "type": "step",
+      "name": "Process Payment Gmo Service",
+      "summary": "GMO service processes the payment authorization and capture logic.",
+      "tags": [
+        "payment",
+        "gmo"
+      ],
+      "complexity": "complex",
+      "filePath": "src/services/gmo.service.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:online-payment-gmo:handle-gmo-callback",
+      "type": "step",
+      "name": "Handle Gmo Callback",
+      "summary": "System handles the asynchronous GMO payment result callback.",
+      "tags": [
+        "api-handler",
+        "gmo"
+      ],
+      "complexity": "complex",
+      "filePath": "src/pages/api/gmo/callback.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:online-payment-gmo:show-payment-success",
+      "type": "step",
+      "name": "Show Payment Success",
+      "summary": "System shows the online payment success confirmation page.",
+      "tags": [
+        "payment",
+        "confirmation"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/booking/payment-online-success.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:online-payment-gmo:show-payment-failure",
+      "type": "step",
+      "name": "Show Payment Failure",
+      "summary": "System shows the online payment failure page with retry guidance.",
+      "tags": [
+        "payment",
+        "confirmation"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/booking/payment-online-failure.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:online-payment-gmo:configure-gmo-settings",
+      "type": "step",
+      "name": "Configure Gmo Settings",
+      "summary": "Admin configures per-tenant GMO merchant settings used during payment.",
+      "tags": [
+        "admin",
+        "gmo"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/api/admin/gmo-settings/index.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "flow:credit-card-management",
+      "type": "flow",
+      "name": "Credit Card Management",
+      "summary": "User saves, searches, and deletes credit cards used for online and recurring ticket payments.",
+      "tags": [
+        "payment",
+        "credit-card"
+      ],
+      "complexity": "moderate",
+      "domainMeta": {
+        "entryPoint": "POST /api/user/credit-card/save",
+        "entryType": "http"
+      }
+    },
+    {
+      "id": "step:credit-card-management:enter-credit-card-info",
+      "type": "step",
+      "name": "Enter Credit Card Info",
+      "summary": "User enters credit card details in the booking or profile form.",
+      "tags": [
+        "payment",
+        "form"
+      ],
+      "complexity": "simple",
+      "filePath": "src/components/CreateBooking/CreditCardForm/index.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:credit-card-management:save-credit-card",
+      "type": "step",
+      "name": "Save Credit Card",
+      "summary": "System saves the credit card via the GMO tokenized card API.",
+      "tags": [
+        "api-handler",
+        "payment"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/api/user/credit-card/save.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:credit-card-management:search-credit-card",
+      "type": "step",
+      "name": "Search Credit Card",
+      "summary": "System retrieves the user's saved credit card for reuse.",
+      "tags": [
+        "api-handler",
+        "payment"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/api/user/credit-card/search.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:credit-card-management:delete-credit-card",
+      "type": "step",
+      "name": "Delete Credit Card",
+      "summary": "User deletes a saved credit card.",
+      "tags": [
+        "api-handler",
+        "payment"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/api/user/credit-card/delete.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:credit-card-management:show-deletion-success",
+      "type": "step",
+      "name": "Show Deletion Success",
+      "summary": "System confirms successful credit card deletion.",
+      "tags": [
+        "payment",
+        "confirmation"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/user/my-page/personal-info/change-credit-card/delete.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "flow:partial-checkout-payment",
+      "type": "flow",
+      "name": "Partial Checkout Payment",
+      "summary": "User or admin processes an additional partial payment on an existing booking, such as for extended stay charges.",
+      "tags": [
+        "payment",
+        "booking",
+        "checkout"
+      ],
+      "complexity": "moderate",
+      "domainMeta": {
+        "entryPoint": "GET /user/my-page/booking-history/partial-checkout/[id]",
+        "entryType": "http"
+      }
+    },
+    {
+      "id": "step:partial-checkout-payment:open-partial-checkout-page",
+      "type": "step",
+      "name": "Open Partial Checkout Page",
+      "summary": "User opens the partial checkout page for an existing booking.",
+      "tags": [
+        "payment",
+        "page"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/user/my-page/booking-history/partial-checkout/[id].tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:partial-checkout-payment:submit-partial-checkout",
+      "type": "step",
+      "name": "Submit Partial Checkout",
+      "summary": "Partial checkout charge is submitted via the bookings partial-checkout API.",
+      "tags": [
+        "api-handler",
+        "payment"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/api/user/bookings/partial-checkout/[id].ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:partial-checkout-payment:admin-process-partial-checkout",
+      "type": "step",
+      "name": "Admin Process Partial Checkout",
+      "summary": "Admin processes or reviews a partial checkout on behalf of a customer.",
+      "tags": [
+        "admin",
+        "payment",
+        "page"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/admin/booking-management/partial-checkout/[id].tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:partial-checkout-payment:show-partial-checkout-success",
+      "type": "step",
+      "name": "Show Partial Checkout Success",
+      "summary": "System confirms the partial checkout payment succeeded.",
+      "tags": [
+        "payment",
+        "confirmation"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/user/my-page/booking-history/partial-checkout/success.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "flow:revenue-obic-accounting",
+      "type": "flow",
+      "name": "Revenue & OBIC Accounting Export",
+      "summary": "Admin reviews revenue analytics and exports OBIC accounting codes/reports for bookings and tickets for financial reconciliation.",
+      "tags": [
+        "admin",
+        "revenue",
+        "obic",
+        "accounting"
+      ],
+      "complexity": "moderate",
+      "domainMeta": {
+        "entryPoint": "GET /admin/revenue-management",
+        "entryType": "http"
+      }
+    },
+    {
+      "id": "step:revenue-obic-accounting:view-revenue-dashboard",
+      "type": "step",
+      "name": "View Revenue Dashboard",
+      "summary": "Admin views the revenue management dashboard.",
+      "tags": [
+        "admin",
+        "revenue",
+        "page"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/admin/revenue-management.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:revenue-obic-accounting:query-revenue-counts",
+      "type": "step",
+      "name": "Query Revenue Counts",
+      "summary": "System queries aggregate revenue counts for the selected period.",
+      "tags": [
+        "api-handler",
+        "revenue"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/api/admin/revenue-management/count.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:revenue-obic-accounting:export-revenue-report",
+      "type": "step",
+      "name": "Export Revenue Report",
+      "summary": "Admin exports a detailed revenue report.",
+      "tags": [
+        "api-handler",
+        "revenue"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/api/admin/revenue-management/export.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:revenue-obic-accounting:backfill-obic-codes",
+      "type": "step",
+      "name": "Backfill Obic Codes",
+      "summary": "System backfills missing OBIC accounting codes for existing tickets.",
+      "tags": [
+        "api-handler",
+        "obic"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/api/admin/tickets/[id]/backfill-obic-codes.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:revenue-obic-accounting:export-obic-codes",
+      "type": "step",
+      "name": "Export Obic Codes",
+      "summary": "Admin exports OBIC accounting codes for tickets.",
+      "tags": [
+        "api-handler",
+        "obic"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/api/admin/tickets/obic-codes/export.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:revenue-obic-accounting:force-recompute-obic",
+      "type": "step",
+      "name": "Force Recompute Obic",
+      "summary": "Admin forces recomputation of OBIC codes for a specific booking.",
+      "tags": [
+        "api-handler",
+        "obic"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/api/admin/bookings/[id]/force-recompute-obic.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "domain:pos-checkin-ticketing",
+      "type": "domain",
+      "name": "POS Check-in & Ticket Scanning",
+      "summary": "Handles on-site facility operations: scanning booking barcodes to check customers in/out, tracking booking/vacancy status in real time, and integrating with the Smaregi POS terminal system for payment and inventory sync.",
+      "tags": [
+        "pos",
+        "smaregi",
+        "check-in",
+        "barcode"
+      ],
+      "complexity": "moderate",
+      "domainMeta": {
+        "entities": [
+          "Booking",
+          "Ticket",
+          "Tenant"
+        ],
+        "businessRules": [
+          "A booking can only be checked in once it is confirmed and not already checked in",
+          "Smaregi integration is opt-in per tenant and gated by a feature flag",
+          "Scan actions can be rolled back if performed in error"
+        ],
+        "crossDomainInteractions": [
+          "Operates on bookings created by Booking & Reservation Management",
+          "Uses ticket/tenant configuration from Admin Facility Management",
+          "Calculates and confirms POS payment amounts tied to Payment & Billing"
+        ]
+      }
+    },
+    {
+      "id": "flow:barcode-checkin-checkout",
+      "type": "flow",
+      "name": "Barcode Check-in / Check-out",
+      "summary": "Facility staff scans a customer's booking barcode to check them in or out of the facility, with the ability to roll back mistaken scans.",
+      "tags": [
+        "pos",
+        "barcode",
+        "check-in"
+      ],
+      "complexity": "moderate",
+      "domainMeta": {
+        "entryPoint": "GET /admin/barcode-scanner",
+        "entryType": "http"
+      }
+    },
+    {
+      "id": "step:barcode-checkin-checkout:open-barcode-scanner",
+      "type": "step",
+      "name": "Open Barcode Scanner",
+      "summary": "Staff opens the barcode scanner interface at the facility entrance.",
+      "tags": [
+        "pos",
+        "page"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/admin/barcode-scanner.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:barcode-checkin-checkout:scan-booking-barcode",
+      "type": "step",
+      "name": "Scan Booking Barcode",
+      "summary": "Staff scans a customer's booking barcode to look up the reservation.",
+      "tags": [
+        "api-handler",
+        "pos"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/api/admin/bookings/scan.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:barcode-checkin-checkout:check-in-booking",
+      "type": "step",
+      "name": "Check In Booking",
+      "summary": "Booking is marked checked-in at the POS terminal.",
+      "tags": [
+        "api-handler",
+        "pos"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/api/pos/bookings/check-in.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:barcode-checkin-checkout:check-out-booking",
+      "type": "step",
+      "name": "Check Out Booking",
+      "summary": "Booking is marked checked-out at the POS terminal.",
+      "tags": [
+        "api-handler",
+        "pos"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/api/pos/bookings/check-out.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:barcode-checkin-checkout:rollback-scan",
+      "type": "step",
+      "name": "Rollback Scan",
+      "summary": "Staff rolls back an erroneous check-in/out scan.",
+      "tags": [
+        "api-handler",
+        "pos"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/api/admin/bookings/rollback-scan.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "flow:smaregi-pos-integration",
+      "type": "flow",
+      "name": "Smaregi POS Integration",
+      "summary": "System checks whether Smaregi POS integration is enabled for a tenant, gates related UI, displays Smaregi QR codes on tickets, and calculates POS payment amounts.",
+      "tags": [
+        "pos",
+        "smaregi",
+        "integration"
+      ],
+      "complexity": "moderate",
+      "domainMeta": {
+        "entryPoint": "Tenant-gated feature (SmaregiEnabledContext)",
+        "entryType": "event"
+      }
+    },
+    {
+      "id": "step:smaregi-pos-integration:check-smaregi-enabled",
+      "type": "step",
+      "name": "Check Smaregi Enabled",
+      "summary": "System checks whether Smaregi POS integration is enabled for the current tenant.",
+      "tags": [
+        "pos",
+        "smaregi"
+      ],
+      "complexity": "simple",
+      "filePath": "src/libs/hooks/useSmaregiEnabled.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:smaregi-pos-integration:gate-feature-via-hoc",
+      "type": "step",
+      "name": "Gate Feature Via Hoc",
+      "summary": "UI components are gated behind a higher-order component that requires Smaregi to be enabled.",
+      "tags": [
+        "pos",
+        "smaregi"
+      ],
+      "complexity": "simple",
+      "filePath": "src/libs/hoc/withEnabledSmaregi.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:smaregi-pos-integration:display-smaregi-qrcode",
+      "type": "step",
+      "name": "Display Smaregi Qrcode",
+      "summary": "System displays a Smaregi QR code on the ticket for POS scanning.",
+      "tags": [
+        "pos",
+        "smaregi",
+        "ticket"
+      ],
+      "complexity": "simple",
+      "filePath": "src/components/Ticket/ViewTicket/components/SmaregiQRCode.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:smaregi-pos-integration:calculate-pos-payment",
+      "type": "step",
+      "name": "Calculate Pos Payment",
+      "summary": "System calculates the payment amount due at the Smaregi POS terminal.",
+      "tags": [
+        "api-handler",
+        "pos",
+        "payment"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/api/pos/bookings/calculate-pay-amount.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:smaregi-pos-integration:record-smaregi-scan-status",
+      "type": "step",
+      "name": "Record Smaregi Scan Status",
+      "summary": "Booking record is updated with the Smaregi scan status.",
+      "tags": [
+        "database",
+        "pos"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/utils/server/booking-queue.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "flow:ticket-scan-management",
+      "type": "flow",
+      "name": "Ticket Scan & Vacancy Status Management",
+      "summary": "Admin monitors real-time scan activity and facility vacancy status across bookings from the scan management dashboard.",
+      "tags": [
+        "pos",
+        "admin",
+        "vacancy"
+      ],
+      "complexity": "simple",
+      "domainMeta": {
+        "entryPoint": "GET /admin/scan-management",
+        "entryType": "http"
+      }
+    },
+    {
+      "id": "step:ticket-scan-management:view-scan-management-dashboard",
+      "type": "step",
+      "name": "View Scan Management Dashboard",
+      "summary": "Admin views the scan management dashboard for real-time check-in activity.",
+      "tags": [
+        "admin",
+        "pos",
+        "page"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/admin/scan-management/index.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:ticket-scan-management:update-booking-status",
+      "type": "step",
+      "name": "Update Booking Status",
+      "summary": "Admin manually updates a booking's check-in/out status if needed.",
+      "tags": [
+        "api-handler",
+        "booking"
+      ],
+      "complexity": "moderate",
+      "filePath": "src/pages/api/admin/bookings/[id]/status.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:ticket-scan-management:bulk-booking-status",
+      "type": "step",
+      "name": "Bulk Booking Status",
+      "summary": "System retrieves bulk booking status information for the dashboard.",
+      "tags": [
+        "api-handler",
+        "booking"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/api/admin/bookings/status.ts",
+      "lineRange": [
+        0,
+        0
+      ]
+    },
+    {
+      "id": "step:ticket-scan-management:view-vacancies-status-page",
+      "type": "step",
+      "name": "View Vacancies Status Page",
+      "summary": "Admin views the facility vacancies status page.",
+      "tags": [
+        "admin",
+        "vacancy",
+        "page"
+      ],
+      "complexity": "simple",
+      "filePath": "src/pages/admin/vacancies-status/index.tsx",
+      "lineRange": [
+        0,
+        0
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "source": "domain:booking-reservation-management",
+      "target": "flow:create-online-booking",
+      "type": "contains_flow",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "flow:create-online-booking",
+      "target": "step:create-online-booking:select-tenant-ticket-date",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.1
+    },
+    {
+      "source": "flow:create-online-booking",
+      "target": "step:create-online-booking:enter-quantity-ages",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.2
+    },
+    {
+      "source": "flow:create-online-booking",
+      "target": "step:create-online-booking:accept-disclaimer-terms",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.3
+    },
+    {
+      "source": "flow:create-online-booking",
+      "target": "step:create-online-booking:enter-credit-card",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.4
+    },
+    {
+      "source": "flow:create-online-booking",
+      "target": "step:create-online-booking:submit-booking-request",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "flow:create-online-booking",
+      "target": "step:create-online-booking:process-gmo-payment",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "flow:create-online-booking",
+      "target": "step:create-online-booking:show-booking-confirmation",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "flow:create-online-booking",
+      "target": "step:create-online-booking:show-booking-completion",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "domain:booking-reservation-management",
+      "target": "flow:create-offline-booking",
+      "type": "contains_flow",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "flow:create-offline-booking",
+      "target": "step:create-offline-booking:open-offline-booking-form",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.1
+    },
+    {
+      "source": "flow:create-offline-booking",
+      "target": "step:create-offline-booking:select-ticket-plan-type",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.2
+    },
+    {
+      "source": "flow:create-offline-booking",
+      "target": "step:create-offline-booking:enter-booking-quantities",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.3
+    },
+    {
+      "source": "flow:create-offline-booking",
+      "target": "step:create-offline-booking:calculate-total-price",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.4
+    },
+    {
+      "source": "flow:create-offline-booking",
+      "target": "step:create-offline-booking:confirm-offline-booking",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "flow:create-offline-booking",
+      "target": "step:create-offline-booking:submit-offline-booking",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "flow:create-offline-booking",
+      "target": "step:create-offline-booking:persist-booking-record",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "domain:booking-reservation-management",
+      "target": "flow:manage-booking-history",
+      "type": "contains_flow",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "flow:manage-booking-history",
+      "target": "step:manage-booking-history:list-booking-history",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.2
+    },
+    {
+      "source": "flow:manage-booking-history",
+      "target": "step:manage-booking-history:view-booking-detail",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.4
+    },
+    {
+      "source": "flow:manage-booking-history",
+      "target": "step:manage-booking-history:update-booking-info",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "flow:manage-booking-history",
+      "target": "step:manage-booking-history:cancel-booking",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "flow:manage-booking-history",
+      "target": "step:manage-booking-history:show-cancel-success",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "domain:booking-reservation-management",
+      "target": "flow:booking-queue-vacancy",
+      "type": "contains_flow",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "flow:booking-queue-vacancy",
+      "target": "step:booking-queue-vacancy:view-booking-queue",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.2
+    },
+    {
+      "source": "flow:booking-queue-vacancy",
+      "target": "step:booking-queue-vacancy:fetch-waiting-bookings",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.4
+    },
+    {
+      "source": "flow:booking-queue-vacancy",
+      "target": "step:booking-queue-vacancy:call-next-booking",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "flow:booking-queue-vacancy",
+      "target": "step:booking-queue-vacancy:auto-cancel-overdue",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "flow:booking-queue-vacancy",
+      "target": "step:booking-queue-vacancy:view-vacancy-status",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "flow:booking-queue-vacancy",
+      "target": "step:booking-queue-vacancy:cron-process-overdue-queue",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "domain:booking-reservation-management",
+      "target": "flow:buy-ticket-plans",
+      "type": "contains_flow",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "flow:buy-ticket-plans",
+      "target": "step:buy-ticket-plans:browse-monthly-ticket-page",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.2
+    },
+    {
+      "source": "flow:buy-ticket-plans",
+      "target": "step:buy-ticket-plans:browse-times-limit-ticket-page",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.4
+    },
+    {
+      "source": "flow:buy-ticket-plans",
+      "target": "step:buy-ticket-plans:fill-monthly-booking-form",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "flow:buy-ticket-plans",
+      "target": "step:buy-ticket-plans:check-monthly-ticket-usage",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "flow:buy-ticket-plans",
+      "target": "step:buy-ticket-plans:show-monthly-completion",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "domain:user-account-authentication",
+      "target": "flow:user-signup-verification",
+      "type": "contains_flow",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "flow:user-signup-verification",
+      "target": "step:user-signup-verification:fill-signup-form",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.2
+    },
+    {
+      "source": "flow:user-signup-verification",
+      "target": "step:user-signup-verification:check-existing-email",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.4
+    },
+    {
+      "source": "flow:user-signup-verification",
+      "target": "step:user-signup-verification:create-account",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "flow:user-signup-verification",
+      "target": "step:user-signup-verification:send-verification-email",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "flow:user-signup-verification",
+      "target": "step:user-signup-verification:verify-email-token",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "flow:user-signup-verification",
+      "target": "step:user-signup-verification:show-signup-success",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "domain:user-account-authentication",
+      "target": "flow:login-password-recovery",
+      "type": "contains_flow",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "flow:login-password-recovery",
+      "target": "step:login-password-recovery:submit-signin-credentials",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.2
+    },
+    {
+      "source": "flow:login-password-recovery",
+      "target": "step:login-password-recovery:authenticate-nextauth",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.4
+    },
+    {
+      "source": "flow:login-password-recovery",
+      "target": "step:login-password-recovery:request-password-reset",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "flow:login-password-recovery",
+      "target": "step:login-password-recovery:reset-password-with-token",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "flow:login-password-recovery",
+      "target": "step:login-password-recovery:request-unlock-account",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "flow:login-password-recovery",
+      "target": "step:login-password-recovery:unlock-account-token",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "domain:user-account-authentication",
+      "target": "flow:manage-personal-info",
+      "type": "contains_flow",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "flow:manage-personal-info",
+      "target": "step:manage-personal-info:view-personal-info",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.1
+    },
+    {
+      "source": "flow:manage-personal-info",
+      "target": "step:manage-personal-info:update-personal-info",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.2
+    },
+    {
+      "source": "flow:manage-personal-info",
+      "target": "step:manage-personal-info:change-email",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.3
+    },
+    {
+      "source": "flow:manage-personal-info",
+      "target": "step:manage-personal-info:change-password",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.4
+    },
+    {
+      "source": "flow:manage-personal-info",
+      "target": "step:manage-personal-info:manage-credit-cards",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "flow:manage-personal-info",
+      "target": "step:manage-personal-info:manage-favorite-tenants",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "flow:manage-personal-info",
+      "target": "step:manage-personal-info:delete-account",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "domain:admin-facility-management",
+      "target": "flow:tenant-management",
+      "type": "contains_flow",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "flow:tenant-management",
+      "target": "step:tenant-management:list-tenants",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.2
+    },
+    {
+      "source": "flow:tenant-management",
+      "target": "step:tenant-management:create-tenant",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.4
+    },
+    {
+      "source": "flow:tenant-management",
+      "target": "step:tenant-management:edit-tenant",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "flow:tenant-management",
+      "target": "step:tenant-management:view-tenant-detail",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "flow:tenant-management",
+      "target": "step:tenant-management:persist-tenant",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "domain:admin-facility-management",
+      "target": "flow:ticket-management",
+      "type": "contains_flow",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "flow:ticket-management",
+      "target": "step:ticket-management:list-tickets",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.2
+    },
+    {
+      "source": "flow:ticket-management",
+      "target": "step:ticket-management:create-ticket",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.4
+    },
+    {
+      "source": "flow:ticket-management",
+      "target": "step:ticket-management:edit-ticket",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "flow:ticket-management",
+      "target": "step:ticket-management:configure-booking-schedules",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "flow:ticket-management",
+      "target": "step:ticket-management:persist-ticket",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "domain:admin-facility-management",
+      "target": "flow:staff-management",
+      "type": "contains_flow",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "flow:staff-management",
+      "target": "step:staff-management:list-staff",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.2
+    },
+    {
+      "source": "flow:staff-management",
+      "target": "step:staff-management:create-staff",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.4
+    },
+    {
+      "source": "flow:staff-management",
+      "target": "step:staff-management:edit-staff",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "flow:staff-management",
+      "target": "step:staff-management:persist-staff",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "domain:admin-facility-management",
+      "target": "flow:news-disclaimer-management",
+      "type": "contains_flow",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "flow:news-disclaimer-management",
+      "target": "step:news-disclaimer-management:list-news",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.2
+    },
+    {
+      "source": "flow:news-disclaimer-management",
+      "target": "step:news-disclaimer-management:create-news",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.4
+    },
+    {
+      "source": "flow:news-disclaimer-management",
+      "target": "step:news-disclaimer-management:edit-news",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "flow:news-disclaimer-management",
+      "target": "step:news-disclaimer-management:manage-disclaimers",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "flow:news-disclaimer-management",
+      "target": "step:news-disclaimer-management:persist-news",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "domain:admin-facility-management",
+      "target": "flow:app-email-settings-management",
+      "type": "contains_flow",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "flow:app-email-settings-management",
+      "target": "step:app-email-settings-management:view-app-settings",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.2
+    },
+    {
+      "source": "flow:app-email-settings-management",
+      "target": "step:app-email-settings-management:manage-email-templates",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.4
+    },
+    {
+      "source": "flow:app-email-settings-management",
+      "target": "step:app-email-settings-management:edit-email-setting",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "flow:app-email-settings-management",
+      "target": "step:app-email-settings-management:preview-email-template",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "flow:app-email-settings-management",
+      "target": "step:app-email-settings-management:send-preview-email",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "domain:payment-billing",
+      "target": "flow:online-payment-gmo",
+      "type": "contains_flow",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "flow:online-payment-gmo",
+      "target": "step:online-payment-gmo:redirect-to-gmo-payment",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.2
+    },
+    {
+      "source": "flow:online-payment-gmo",
+      "target": "step:online-payment-gmo:process-payment-gmo-service",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.4
+    },
+    {
+      "source": "flow:online-payment-gmo",
+      "target": "step:online-payment-gmo:handle-gmo-callback",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "flow:online-payment-gmo",
+      "target": "step:online-payment-gmo:show-payment-success",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "flow:online-payment-gmo",
+      "target": "step:online-payment-gmo:show-payment-failure",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "flow:online-payment-gmo",
+      "target": "step:online-payment-gmo:configure-gmo-settings",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "domain:payment-billing",
+      "target": "flow:credit-card-management",
+      "type": "contains_flow",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "flow:credit-card-management",
+      "target": "step:credit-card-management:enter-credit-card-info",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.2
+    },
+    {
+      "source": "flow:credit-card-management",
+      "target": "step:credit-card-management:save-credit-card",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.4
+    },
+    {
+      "source": "flow:credit-card-management",
+      "target": "step:credit-card-management:search-credit-card",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "flow:credit-card-management",
+      "target": "step:credit-card-management:delete-credit-card",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "flow:credit-card-management",
+      "target": "step:credit-card-management:show-deletion-success",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "domain:payment-billing",
+      "target": "flow:partial-checkout-payment",
+      "type": "contains_flow",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "flow:partial-checkout-payment",
+      "target": "step:partial-checkout-payment:open-partial-checkout-page",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.2
+    },
+    {
+      "source": "flow:partial-checkout-payment",
+      "target": "step:partial-checkout-payment:submit-partial-checkout",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.4
+    },
+    {
+      "source": "flow:partial-checkout-payment",
+      "target": "step:partial-checkout-payment:admin-process-partial-checkout",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "flow:partial-checkout-payment",
+      "target": "step:partial-checkout-payment:show-partial-checkout-success",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "domain:payment-billing",
+      "target": "flow:revenue-obic-accounting",
+      "type": "contains_flow",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "flow:revenue-obic-accounting",
+      "target": "step:revenue-obic-accounting:view-revenue-dashboard",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.2
+    },
+    {
+      "source": "flow:revenue-obic-accounting",
+      "target": "step:revenue-obic-accounting:query-revenue-counts",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.4
+    },
+    {
+      "source": "flow:revenue-obic-accounting",
+      "target": "step:revenue-obic-accounting:export-revenue-report",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "flow:revenue-obic-accounting",
+      "target": "step:revenue-obic-accounting:backfill-obic-codes",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "flow:revenue-obic-accounting",
+      "target": "step:revenue-obic-accounting:export-obic-codes",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "flow:revenue-obic-accounting",
+      "target": "step:revenue-obic-accounting:force-recompute-obic",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "domain:pos-checkin-ticketing",
+      "target": "flow:barcode-checkin-checkout",
+      "type": "contains_flow",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "flow:barcode-checkin-checkout",
+      "target": "step:barcode-checkin-checkout:open-barcode-scanner",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.2
+    },
+    {
+      "source": "flow:barcode-checkin-checkout",
+      "target": "step:barcode-checkin-checkout:scan-booking-barcode",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.4
+    },
+    {
+      "source": "flow:barcode-checkin-checkout",
+      "target": "step:barcode-checkin-checkout:check-in-booking",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "flow:barcode-checkin-checkout",
+      "target": "step:barcode-checkin-checkout:check-out-booking",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "flow:barcode-checkin-checkout",
+      "target": "step:barcode-checkin-checkout:rollback-scan",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "domain:pos-checkin-ticketing",
+      "target": "flow:smaregi-pos-integration",
+      "type": "contains_flow",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "flow:smaregi-pos-integration",
+      "target": "step:smaregi-pos-integration:check-smaregi-enabled",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.2
+    },
+    {
+      "source": "flow:smaregi-pos-integration",
+      "target": "step:smaregi-pos-integration:gate-feature-via-hoc",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.4
+    },
+    {
+      "source": "flow:smaregi-pos-integration",
+      "target": "step:smaregi-pos-integration:display-smaregi-qrcode",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "flow:smaregi-pos-integration",
+      "target": "step:smaregi-pos-integration:calculate-pos-payment",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "flow:smaregi-pos-integration",
+      "target": "step:smaregi-pos-integration:record-smaregi-scan-status",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "domain:pos-checkin-ticketing",
+      "target": "flow:ticket-scan-management",
+      "type": "contains_flow",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "flow:ticket-scan-management",
+      "target": "step:ticket-scan-management:view-scan-management-dashboard",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.2
+    },
+    {
+      "source": "flow:ticket-scan-management",
+      "target": "step:ticket-scan-management:update-booking-status",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.4
+    },
+    {
+      "source": "flow:ticket-scan-management",
+      "target": "step:ticket-scan-management:bulk-booking-status",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "flow:ticket-scan-management",
+      "target": "step:ticket-scan-management:view-vacancies-status-page",
+      "type": "flow_step",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "domain:booking-reservation-management",
+      "target": "domain:user-account-authentication",
+      "type": "cross_domain",
+      "direction": "forward",
+      "description": "Booking flows require an authenticated user session and rely on user account data.",
+      "weight": 0.7
+    },
+    {
+      "source": "domain:booking-reservation-management",
+      "target": "domain:payment-billing",
+      "type": "cross_domain",
+      "direction": "forward",
+      "description": "Online and offline bookings trigger GMO payment authorization and credit card charges.",
+      "weight": 0.8
+    },
+    {
+      "source": "domain:booking-reservation-management",
+      "target": "domain:pos-checkin-ticketing",
+      "type": "cross_domain",
+      "direction": "forward",
+      "description": "Confirmed bookings are later checked in/out and scanned on-site via POS/Smaregi.",
+      "weight": 0.7
+    },
+    {
+      "source": "domain:payment-billing",
+      "target": "domain:admin-facility-management",
+      "type": "cross_domain",
+      "direction": "forward",
+      "description": "GMO settings and revenue/OBIC reports are configured and reviewed by admins.",
+      "weight": 0.5
+    },
+    {
+      "source": "domain:pos-checkin-ticketing",
+      "target": "domain:admin-facility-management",
+      "type": "cross_domain",
+      "direction": "forward",
+      "description": "Ticket and tenant configuration managed by admins drive POS scan and vacancy validation.",
+      "weight": 0.5
+    },
+    {
+      "source": "domain:admin-facility-management",
+      "target": "domain:user-account-authentication",
+      "type": "cross_domain",
+      "direction": "forward",
+      "description": "Admin manages staff and user accounts through the shared authentication system.",
+      "weight": 0.4
+    }
+  ],
+  "layers": [],
+  "tour": []
+}
