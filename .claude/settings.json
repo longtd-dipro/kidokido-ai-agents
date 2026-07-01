@@ -3,6 +3,6 @@
     "understand-anything@understand-anything": true
   },
    "permissions": {
-    "defaultMode": "bypassPermissions"
+    "defaultMode": "default"
   }
 }
