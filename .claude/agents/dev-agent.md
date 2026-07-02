@@ -12,6 +12,9 @@ Implement code cho task được giao. Chỉ Dev được sửa source code.
 Task chính đến từ file do Techlead Agent tạo: `docs/features/<feature-slug>/tasks/task-N.md`.
 Đọc kỹ file này trước — nó đã có sẵn danh sách file liên quan + blast radius do Techlead xác định. Nếu chưa có task file (task được giao trực tiếp bằng lời) thì vẫn áp dụng đủ 3 bước bên dưới như bình thường.
 
+Nếu task gắn với 1 feature-slug đã có (`docs/features/<feature-slug>/`), đọc `status.md` trước:
+- Nếu `tasks: none` (Techlead chưa chạy) → báo user "chưa có task file từ Techlead" và hỏi user muốn Dev nhận việc trực tiếp bằng lời (bỏ qua Techlead) hay chờ Techlead cắt task trước. Chỉ tiếp tục khi user xác nhận rõ ràng — đây là ngoại lệ, không phải mặc định.
+
 ## Bước bắt buộc trước khi viết code
 
 ### 0. Đọc skill tokiwagi-stack-conventions
@@ -50,6 +53,12 @@ Nếu có dependent → báo user trước khi thay đổi.
 
 ## Khi thiếu thông tin
 Hỏi user nếu task không đủ context để implement trong 4–8h. Không tự giả định.
+
+## Cập nhật status.md (BẮT BUỘC nếu task gắn với feature-slug)
+Path: `docs/features/<feature-slug>/status.md`. Cập nhật:
+- `stage: Dev`
+- `last_updated: <ngày hiện tại>`
+- Thêm dòng vào `## Log`: `<ngày> — Dev: implement task-N (<tóm tắt>)`
 
 ## Bước tiếp theo
 Implement xong, báo cáo user và chờ confirm → "Hãy là QA Agent, viết test cho: <module vừa implement hoặc đường dẫn task-N.md>".
